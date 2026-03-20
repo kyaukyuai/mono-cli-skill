@@ -1,7 +1,7 @@
 ---
 name: mono-cli
 description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
-version: 0.1.2
+version: 0.1.3
 ---
 
 # mono CLI
@@ -23,6 +23,7 @@ mono auth login --pat mono_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # 4. Verify
 mono auth whoami --json
+mono status --json
 ```
 
 ## Authentication
@@ -32,6 +33,13 @@ The CLI uses Personal Access Tokens (PAT). Token resolution order:
 1. `--token <PAT>` flag
 2. `MONO_TOKEN` environment variable
 3. `~/.mono/config.json` saved value
+
+Default base URL is `https://www.mono.style`.
+Persist overrides with:
+
+```bash
+mono config set base-url https://www.mono.style
+```
 
 ## Invariants
 
@@ -57,6 +65,7 @@ mono auth whoami               # User info
 # List
 mono works list --json
 mono works list --fields id,title,status --json
+mono works list --status live --limit 20 --offset 0 --sort created_at:desc --json
 
 # Get
 mono works get <id> --json
@@ -89,6 +98,7 @@ mono articles get <id> --json
 # Create
 mono articles create --json-data '{"title":"Article Title","body":"Body text...","category":"tech"}' --json
 mono articles create --json-file ./article.json --json
+mono articles create --json-data '{"title":"Article Title"}' --file ./article.md --json
 
 # Update
 mono articles update <id> --json-data '{"title":"Updated Title"}' --json
@@ -102,7 +112,7 @@ mono articles delete <id> --yes --json
 mono articles publish <id> --json
 ```
 
-### Questions (Q&A)
+### Questions (Q&A / qa)
 
 ```bash
 # List
@@ -141,7 +151,7 @@ mono profile update --json-data '{"name":"New Name","bio":"Bio text"}' --json
 mono profile update --json-file ./profile.json --json
 ```
 
-### Upload
+### Upload (images)
 
 ```bash
 # Upload image → get URL
@@ -162,6 +172,31 @@ mono schema works.create     # Create operation only
 mono schema articles         # All articles operations
 mono schema questions        # All questions operations
 mono schema profile          # Profile schema
+mono schema --all            # All schemas
+```
+
+### Status
+
+```bash
+mono status --json
+```
+
+### Config
+
+```bash
+mono config list --json
+mono config set base-url https://www.mono.style
+mono config set fields id,title,status
+mono config set output-format json
+mono config path
+```
+
+### Completions
+
+```bash
+mono completions bash > /usr/local/etc/bash_completion.d/mono
+mono completions zsh > ~/.zsh/completions/_mono
+mono completions fish > ~/.config/fish/completions/mono.fish
 ```
 
 ## Global Flags
@@ -170,6 +205,7 @@ mono schema profile          # Profile schema
 |------|-------------|---------|
 | `--json` | JSON output | false (human) |
 | `--ndjson` | NDJSON output (lists) | false |
+| `--output-format` | table \| json \| ndjson \| csv | table |
 | `--fields <f1,f2>` | Field mask | all |
 | `--dry-run` | Validate only (no API call) | false |
 | `--base-url <url>` | Override API base URL | config |
@@ -223,6 +259,7 @@ mono works create --json-data '{"title":"My App","category":"Webアプリ","desc
 - **human** (default): Table format, human-readable
 - **json** (`--json`): Pretty-printed JSON for programmatic use
 - **ndjson** (`--ndjson`): One JSON per line, for streaming
+- **csv** (`--output-format csv`): CSV output
 
 ## Error Handling
 
@@ -237,4 +274,7 @@ Errors are output as JSON to stderr:
 
 Exit codes:
 - `0`: Success
-- `1`: Error (auth, validation, API)
+- `1`: Auth error
+- `2`: Validation error
+- `3`: Network error
+- `4`: API error

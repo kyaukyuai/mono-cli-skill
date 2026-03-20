@@ -1,6 +1,7 @@
 ---
 name: mono-cli
 description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
+version: 0.1.1
 ---
 
 # mono CLI
@@ -63,13 +64,16 @@ mono works get <id> --json
 # Create (dry-run → execute)
 mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"A great app description here"}' --dry-run
 mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"A great app description here"}' --json
+mono works create --json-file ./work.json --json
+cat ./work.json | mono works create --json-stdin --json
 
 # Update
 mono works update <id> --json-data '{"title":"Updated Title"}' --json
+mono works update <id> --json-file ./work.json --json
 
-# Delete
+# Delete (requires --yes)
 mono works delete <id> --dry-run
-mono works delete <id> --json
+mono works delete <id> --yes --json
 ```
 
 ### Articles
@@ -84,12 +88,15 @@ mono articles get <id> --json
 
 # Create
 mono articles create --json-data '{"title":"Article Title","body":"Body text...","category":"tech"}' --json
+mono articles create --json-file ./article.json --json
 
 # Update
 mono articles update <id> --json-data '{"title":"Updated Title"}' --json
+mono articles update <id> --json-file ./article.json --json
 
-# Delete
-mono articles delete <id> --json
+# Delete (requires --yes)
+mono articles delete <id> --dry-run
+mono articles delete <id> --yes --json
 
 # Publish / unpublish
 mono articles publish <id> --json
@@ -107,15 +114,19 @@ mono questions get <id> --json
 
 # Create
 mono questions create --json-data '{"title":"Question title 10+ chars","body":"Question body 20+ characters required"}' --json
+mono questions create --json-file ./question.json --json
 
 # Update
 mono questions update <id> --json-data '{"status":"solved"}' --json
+mono questions update <id> --json-file ./question.json --json
 
-# Delete
-mono questions delete <id> --json
+# Delete (requires --yes)
+mono questions delete <id> --dry-run
+mono questions delete <id> --yes --json
 
 # Answer
 mono questions answer <id> --json-data '{"body":"Answer body 20+ characters required"}' --json
+mono questions answer <id> --json-file ./answer.json --json
 ```
 
 ### Profile
@@ -127,6 +138,7 @@ mono profile get --fields name,bio,role --json
 
 # Update
 mono profile update --json-data '{"name":"New Name","bio":"Bio text"}' --json
+mono profile update --json-file ./profile.json --json
 ```
 
 ### Upload
@@ -163,6 +175,12 @@ mono schema profile          # Profile schema
 | `--base-url <url>` | Override API base URL | config |
 | `--token <pat>` | Override token | config |
 | `--verbose` | Debug output | false |
+| `--timeout <ms>` | Timeout | 30000 |
+| `--retry <n>` | Retry count | 0 |
+| `--retry-wait <ms>` | Retry wait | 500 |
+| `--print-curl` | Print curl command | false |
+| `--quiet` | Minimize stdout | false |
+| `--no-color` | Disable color output | false |
 
 ## Workflow Examples
 

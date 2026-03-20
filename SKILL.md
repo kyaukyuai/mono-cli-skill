@@ -1,7 +1,7 @@
 ---
 name: mono-cli
 description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
-version: 0.1.3
+version: 0.1.4
 ---
 
 # mono CLI
@@ -215,6 +215,7 @@ mono completions fish > ~/.config/fish/completions/mono.fish
 | `--retry <n>` | Retry count | 0 |
 | `--retry-wait <ms>` | Retry wait | 500 |
 | `--print-curl` | Print curl command | false |
+| `--no-mask-token` | Disable token masking for print-curl | false |
 | `--quiet` | Minimize stdout | false |
 | `--no-color` | Disable color output | false |
 

@@ -26,6 +26,6 @@ mono auth login --pat <TOKEN>
 
 ## Links
 
-- [mono](https://and-and.mono.fun) — the platform
+- [mono](https://www.mono.style) — the platform
 - [@kyaukyuai/mono-cli](https://www.npmjs.com/package/@kyaukyuai/mono-cli) — npm package
 - [SKILL.md](./SKILL.md) — full skill specification

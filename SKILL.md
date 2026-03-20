@@ -6,7 +6,7 @@ version: 0.1.1
 
 # mono CLI
 
-CLI tool for [mono](https://and-and.mono.fun), a growth platform for indie developers (個人開発者のためのグロースプラットフォーム).
+CLI tool for [mono](https://www.mono.style), a growth platform for indie developers (個人開発者のためのグロースプラットフォーム).
 
 Manage works, articles, questions, profiles, and image uploads from the terminal or AI agents.
 

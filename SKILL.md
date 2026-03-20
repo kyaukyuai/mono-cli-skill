@@ -1,7 +1,7 @@
 ---
 name: mono-cli
 description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
-version: 0.1.7
+version: 0.1.8
 ---
 
 # mono CLI

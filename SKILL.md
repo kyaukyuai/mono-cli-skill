@@ -1,7 +1,7 @@
 ---
 name: mono-cli
 description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
-version: 0.1.5
+version: 0.1.6
 ---
 
 # mono CLI
@@ -66,6 +66,8 @@ mono auth whoami               # User info
 mono works list --json
 mono works list --fields id,title,status --json
 mono works list --status live --limit 20 --offset 0 --sort created_at:desc --json
+mono works search "React" --json
+mono works stats --json
 
 # Get
 mono works get <id> --json
@@ -101,6 +103,9 @@ mono articles create --json-data '{"title":"Article Title","body":"Body text..."
 mono articles create --json-file ./article.json --json
 mono articles create --json-data '{"title":"Article Title"}' --file ./article.md --json
  # frontmatter と H1 は自動反映されます
+mono articles create --file ./article.md --tags "AI,Claude Code" --json
+mono articles search "Claude Code" --json
+mono articles stats --json
 
 # Update
 mono articles update <id> --json-data '{"title":"Updated Title"}' --json
@@ -123,6 +128,7 @@ mono questions list --sort-by popular --status open --tag javascript --json
 
 # Get
 mono questions get <id> --json
+mono questions search "デプロイ" --json
 
 # Create
 mono questions create --json-data '{"title":"Question title 10+ chars","body":"Question body 20+ characters required"}' --json
@@ -165,6 +171,13 @@ mono upload ./screenshot.png --dry-run
 ```
 
 Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg` (max 5MB)
+
+### Tags
+
+```bash
+mono tags list --json
+mono tags create --name "AI" --json
+```
 
 ### Schema Introspection
 

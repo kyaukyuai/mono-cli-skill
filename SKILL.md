@@ -1,7 +1,7 @@
 ---
 name: mono-cli
 description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
-version: 0.1.4
+version: 0.1.5
 ---
 
 # mono CLI
@@ -91,6 +91,7 @@ mono works delete <id> --yes --json
 # List
 mono articles list --json
 mono articles list --category tech --sort popular --limit 10 --json
+mono articles list --status draft --json
 
 # Get
 mono articles get <id> --json
@@ -99,6 +100,7 @@ mono articles get <id> --json
 mono articles create --json-data '{"title":"Article Title","body":"Body text...","category":"tech"}' --json
 mono articles create --json-file ./article.json --json
 mono articles create --json-data '{"title":"Article Title"}' --file ./article.md --json
+ # frontmatter と H1 は自動反映されます
 
 # Update
 mono articles update <id> --json-data '{"title":"Updated Title"}' --json

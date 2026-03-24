@@ -1,202 +1,193 @@
 ---
 name: mono-cli
-description: CLI skill for mono — a growth platform for indie developers. Manage works, articles, Q&A, profiles, and image uploads from the terminal.
-version: 0.1.8
+description: mono CLIツール — 個人開発者のためのグロースプラットフォームのCLI
+version: 0.1.9
+invariants:
+  - ミューテーション前に必ず --dry-run で検証する
+  - 削除前にユーザーに確認する
+  - リスト取得時は --fields でレスポンスサイズを制限する
+  - プログラム的にパースする場合は --json を使う
+  - ペイロード構築前に mono schema <resource> でフィールドを確認する
 ---
 
 # mono CLI
 
-CLI tool for [mono](https://www.mono.style), a growth platform for indie developers (個人開発者のためのグロースプラットフォーム).
+個人開発者のためのグロースプラットフォーム「mono」のコマンドラインツール。
 
-Manage works, articles, questions, profiles, and image uploads from the terminal or AI agents.
-
-## Setup
+## セットアップ
 
 ```bash
-# 1. Install
+# 1. インストール
 npm install -g @kyaukyuai/mono-cli
 
-# 2. Create a token (Web Dashboard → Settings → API Tokens)
+# 2. トークンを作成（Webダッシュボード → 設定 → APIトークン）
 
-# 3. Login
+# 3. CLIにログイン
 mono auth login --pat mono_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# 4. Verify
+# 4. 接続確認
 mono auth whoami --json
 mono status --json
 ```
 
-## Authentication
+## 認証
 
-The CLI uses Personal Access Tokens (PAT). Token resolution order:
+CLIはPersonal Access Token (PAT) を使用します。トークンは以下の優先順位で解決されます:
 
-1. `--token <PAT>` flag
-2. `MONO_TOKEN` environment variable
-3. `~/.mono/config.json` saved value
+1. `--token <PAT>` フラグ
+2. `MONO_TOKEN` 環境変数
+3. `~/.mono/config.json` の保存値
 
-Default base URL is `https://www.mono.style`.
-Persist overrides with:
+デフォルトの API ベースURL は `https://www.mono.style` です。
+`mono config set base-url <url>` で永続的に上書きできます。
+
+## コマンド一覧
+
+### 認証
 
 ```bash
-mono config set base-url https://www.mono.style
+mono auth login --pat <PAT>    # トークン保存
+mono auth logout               # トークン削除
+mono auth whoami               # ユーザー情報
 ```
 
-## Invariants
-
-- Always validate with `--dry-run` before mutations
-- Confirm with the user before deletions
-- Use `--fields` to limit response size on list operations
-- Use `--json` for programmatic parsing
-- Check `mono schema <resource>` before building payloads
-
-## Commands
-
-### Auth
+### 作品 (Works)
 
 ```bash
-mono auth login --pat <PAT>    # Save token
-mono auth logout               # Remove token
-mono auth whoami               # User info
-```
-
-### Works
-
-```bash
-# List
+# 一覧取得
 mono works list --json
 mono works list --fields id,title,status --json
+mono works list --status live --ndjson
 mono works list --status live --limit 20 --offset 0 --sort created_at:desc --json
 mono works search "React" --json
 mono works stats --json
 
-# Get
+# 詳細取得
 mono works get <id> --json
 
-# Create (dry-run → execute)
-mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"A great app description here"}' --dry-run
-mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"A great app description here"}' --json
+# 作成
+mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"素晴らしいアプリです"}' --dry-run
+mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"素晴らしいアプリです"}' --json
 mono works create --json-file ./work.json --json
 cat ./work.json | mono works create --json-stdin --json
 
-# Update
+# 更新
+mono works update <id> --json-data '{"title":"Updated Title"}' --dry-run
 mono works update <id> --json-data '{"title":"Updated Title"}' --json
 mono works update <id> --json-file ./work.json --json
 
-# Delete (requires --yes)
+# 削除
 mono works delete <id> --dry-run
 mono works delete <id> --yes --json
 ```
 
-### Articles
+### 記事 (Articles)
 
 ```bash
-# List
+# 一覧取得
 mono articles list --json
 mono articles list --category tech --sort popular --limit 10 --json
-mono articles list --status draft --json
 
-# Get
+# 詳細取得
 mono articles get <id> --json
 
-# Create
-mono articles create --json-data '{"title":"Article Title","body":"Body text...","category":"tech"}' --json
+# 作成
+mono articles create --json-data '{"title":"記事タイトル"}' --dry-run
+mono articles create --json-data '{"title":"記事タイトル","body":"本文...","category":"tech"}' --json
 mono articles create --json-file ./article.json --json
-mono articles create --json-data '{"title":"Article Title"}' --file ./article.md --json
- # frontmatter と H1 は自動反映されます
+mono articles create --json-data '{"title":"記事タイトル"}' --file ./article.md --json
+mono articles create --file ./article.md --category development --json
+ # frontmatter (title/category/excerpt/coverImageUrl) と H1 は自動反映
+ # 二重フロントマターも自動マージ、重複H1は自動除去
+mono articles list --status draft --json
 mono articles create --file ./article.md --tags "AI,Claude Code" --json
 mono articles search "Claude Code" --json
 mono articles stats --json
 
-# Update
-mono articles update <id> --json-data '{"title":"Updated Title"}' --json
+# 更新
+mono articles update <id> --json-data '{"title":"更新タイトル"}' --json
 mono articles update <id> --json-file ./article.json --json
 
-# Delete (requires --yes)
+# 削除
 mono articles delete <id> --dry-run
 mono articles delete <id> --yes --json
 
-# Publish / unpublish
+# 公開/下書き切り替え
 mono articles publish <id> --json
 ```
 
-### Questions (Q&A / qa)
+### 質問 (Questions / Q&A / qa)
 
 ```bash
-# List
+# 一覧取得
 mono questions list --json
 mono questions list --sort-by popular --status open --tag javascript --json
 
-# Get
+# 詳細取得
 mono questions get <id> --json
 mono questions search "デプロイ" --json
 
-# Create
-mono questions create --json-data '{"title":"Question title 10+ chars","body":"Question body 20+ characters required"}' --json
+# 作成
+mono questions create --json-data '{"title":"質問タイトルは10文字以上","body":"質問の本文は20文字以上で記述してください"}' --dry-run
+mono questions create --json-data '{"title":"質問タイトルは10文字以上","body":"質問の本文は20文字以上で記述してください"}' --json
 mono questions create --json-file ./question.json --json
 
-# Update
+# 更新
 mono questions update <id> --json-data '{"status":"solved"}' --json
 mono questions update <id> --json-file ./question.json --json
 
-# Delete (requires --yes)
+# 削除
 mono questions delete <id> --dry-run
 mono questions delete <id> --yes --json
 
-# Answer
-mono questions answer <id> --json-data '{"body":"Answer body 20+ characters required"}' --json
+# 回答
+mono questions answer <id> --json-data '{"body":"回答の本文は20文字以上で記述してください"}' --json
 mono questions answer <id> --json-file ./answer.json --json
 ```
 
-### Profile
+### プロフィール (Profile)
 
 ```bash
-# Get
+# 自分のプロフィール取得
 mono profile get --json
 mono profile get --fields name,bio,role --json
 
-# Update
-mono profile update --json-data '{"name":"New Name","bio":"Bio text"}' --json
+# プロフィール更新
+mono profile update --json-data '{"name":"新しい名前","bio":"自己紹介"}' --dry-run
+mono profile update --json-data '{"name":"新しい名前","bio":"自己紹介","githubUrl":"https://github.com/user"}' --json
 mono profile update --json-file ./profile.json --json
 ```
 
-### Upload (images)
+### 画像アップロード (Upload / images)
 
 ```bash
-# Upload image → get URL
+# アップロード（URL取得）
 mono upload ./screenshot.png --json
 # => { "url": "https://...", "fileName": "...", "size": 12345, "type": "image/png" }
 
-# Validate only (no upload)
+# ファイル検証のみ（アップロードなし）
 mono upload ./screenshot.png --dry-run
+
+# 特定フィールドのみ取得
+mono upload ./photo.jpg --fields url --json
 ```
 
-Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg` (max 5MB)
+対応形式: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`（最大5MB）
 
-### Tags
+### タグ (Tags)
 
 ```bash
 mono tags list --json
 mono tags create --name "AI" --json
 ```
 
-### Schema Introspection
-
-```bash
-mono schema works            # All works operations
-mono schema works.create     # Create operation only
-mono schema articles         # All articles operations
-mono schema questions        # All questions operations
-mono schema profile          # Profile schema
-mono schema --all            # All schemas
-```
-
-### Status
+### ステータス
 
 ```bash
 mono status --json
 ```
 
-### Config
+### 設定
 
 ```bash
 mono config list --json
@@ -206,7 +197,14 @@ mono config set output-format json
 mono config path
 ```
 
-### Completions
+### スキーマ
+
+```bash
+mono schema works.create
+mono schema --all
+```
+
+### 補完
 
 ```bash
 mono completions bash > /usr/local/etc/bash_completion.d/mono
@@ -214,83 +212,104 @@ mono completions zsh > ~/.zsh/completions/_mono
 mono completions fish > ~/.config/fish/completions/mono.fish
 ```
 
-## Global Flags
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--json` | JSON output | false (human) |
-| `--ndjson` | NDJSON output (lists) | false |
-| `--output-format` | table \| json \| ndjson \| csv | table |
-| `--fields <f1,f2>` | Field mask | all |
-| `--dry-run` | Validate only (no API call) | false |
-| `--base-url <url>` | Override API base URL | config |
-| `--token <pat>` | Override token | config |
-| `--verbose` | Debug output | false |
-| `--timeout <ms>` | Timeout | 30000 |
-| `--retry <n>` | Retry count | 0 |
-| `--retry-wait <ms>` | Retry wait | 500 |
-| `--print-curl` | Print curl command | false |
-| `--no-mask-token` | Disable token masking for print-curl | false |
-| `--quiet` | Minimize stdout | false |
-| `--no-color` | Disable color output | false |
-
-## Workflow Examples
-
-### Safely create a work
+### スキーマ内省
 
 ```bash
-# 1. Check schema
-mono schema works.create
-
-# 2. Dry-run validation
-mono works create --json-data '{"title":"Portfolio Site","category":"Webアプリ","description":"A portfolio site built with Next.js"}' --dry-run
-
-# 3. Create
-mono works create --json-data '{"title":"Portfolio Site","category":"Webアプリ","description":"A portfolio site built with Next.js"}' --json
+mono schema works            # worksリソースの全操作スキーマ
+mono schema works.create     # 作成操作のスキーマのみ
+mono schema articles         # articlesリソースの全操作スキーマ
+mono schema questions        # questionsリソースの全操作スキーマ
+mono schema profile          # profileリソースのスキーマ
 ```
 
-### Create and publish an article
+### その他
 
 ```bash
-# 1. Create draft
-mono articles create --json-data '{"title":"Dev Log","body":"# Introduction\n\nContent...","category":"dev-log"}' --json
+mono version                 # バージョン表示
+```
 
-# 2. Publish
+## グローバルフラグ
+
+| フラグ | 説明 | デフォルト |
+|--------|------|-----------|
+| `--json` | JSON出力 | false (human) |
+| `--ndjson` | リストをNDJSON出力 | false |
+| `--fields <f1,f2>` | フィールドマスク | all |
+| `--dry-run` | ミューテーション検証のみ | false |
+| `--base-url <url>` | APIベースURL上書き | config値 |
+| `--token <pat>` | トークン上書き | config値 |
+| `--verbose` | デバッグ出力 | false |
+| `--timeout <ms>` | タイムアウト | 30000 |
+| `--retry <n>` | リトライ回数 | 0 |
+| `--retry-wait <ms>` | リトライ待機 | 500 |
+| `--print-curl` | curlコマンドを出力 | false |
+| `--no-mask-token` | print-curl のトークンマスク解除 | false |
+| `--quiet` | 標準出力を最小化 | false |
+| `--no-color` | カラー出力無効 | false |
+
+## ワークフロー例
+
+### 作品を安全に作成する
+
+```bash
+# 1. スキーマを確認
+mono schema works.create
+
+# 2. ドライランで検証
+mono works create --json-data '{"title":"Portfolio Site","category":"Webアプリ","description":"Next.jsで作ったポートフォリオサイト"}' --dry-run
+
+# 3. 作成
+mono works create --json-data '{"title":"Portfolio Site","category":"Webアプリ","description":"Next.jsで作ったポートフォリオサイト"}' --json
+```
+
+### 記事を作成して公開する
+
+```bash
+# 1. 下書き作成
+mono articles create --json-data '{"title":"開発日記","body":"# はじめに\n\n本文...","category":"dev-log"}' --json
+
+# 2. 公開
 mono articles publish <id> --json
 ```
 
-### Upload image and create a work
+### 質問して回答を確認する
 
 ```bash
-# 1. Upload image
-mono upload ./screenshot.png --json
-# => { "url": "https://...", ... }
+# 1. 質問を投稿
+mono questions create --json-data '{"title":"Next.js 16でのルーティングについて","body":"App Routerでの動的ルートの設定方法を教えてください。具体的には..."}' --json
 
-# 2. Create work with the returned URL
-mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"A great app","thumbnailUrl":"https://..."}' --json
+# 2. 質問の詳細と回答を確認
+mono questions get <id> --json
 ```
 
-## Output Formats
+### 画像付きで作品を作成する
 
-- **human** (default): Table format, human-readable
-- **json** (`--json`): Pretty-printed JSON for programmatic use
-- **ndjson** (`--ndjson`): One JSON per line, for streaming
-- **csv** (`--output-format csv`): CSV output
+```bash
+# 1. 画像をアップロード
+mono upload ./screenshot.png --json
+# => { "url": "https://xxxxx.public.blob.vercel-storage.com/...", ... }
 
-## Error Handling
+# 2. 返却URLを使って作品を作成
+mono works create --json-data '{"title":"My App","category":"Webアプリ","description":"素晴らしいアプリです","thumbnailUrl":"https://xxxxx.public.blob.vercel-storage.com/..."}' --json
+```
 
-Errors are output as JSON to stderr:
+## 出力フォーマット
+
+- **human** (デフォルト): テーブル形式、人間可読
+- **json** (`--json`): プリティプリントJSON、プログラム処理向け
+- **ndjson** (`--ndjson`): 1行JSON、ストリーミング処理向け
+
+## エラーハンドリング
+
+エラーはJSON形式で標準エラー出力に出力されます:
 
 ```json
 {
-  "error": "Authentication required. Please login with `mono auth login`.",
+  "error": "認証が必要です。`mono auth login` でログインしてください。",
   "exitCode": 1
 }
 ```
 
-Exit codes:
-- `0`: Success
-- `1`: Auth error
-- `2`: Validation error
-- `3`: Network error
-- `4`: API error
+終了コード:
+- `0`: 成功
+- `1`: エラー (認証、バリデーション、APIエラー)
